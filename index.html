@@ -1,12 +1,16 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Movie List</title>
     <style>
         body {
             background-color: black;
             margin: 0;
             padding: 0;
+            color: white;
+            font-family: Arial, sans-serif;
         }
         .movie-grid {
             display: grid;
@@ -15,38 +19,79 @@
             padding: 20px;
         }
         .movie-card {
-            display: flex;
-            flex-direction: column;
-            align-items: center; /* Centers content */
-            text-align: center;
-            border: 2px solid white; /* Ensure border is visible */
+            border: 2px solid white;
             padding: 15px;
             border-radius: 12px;
             background-color: rgba(255, 255, 255, 0.1);
             color: white;
-            width: 200px; /* Set a consistent width */
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s ease-in-out;
+        }
+        .movie-card:hover {
+            transform: scale(1.05);
         }
         .movie-card img {
-            display: block;
-            margin: 10px auto; /* Centers image horizontally */
-            border-radius: 8px; /* Optional: Adds rounded corners */
-            max-width: 100%; /* Ensures responsiveness */
+            max-width: 100%;
+            border-radius: 8px;
         }
-        .movie-card h3 {
-            margin-top: 0;
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: #222;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
             color: white;
         }
-        .movie-card p {
-            color: #dddddd;
+        .modal-content img {
+            width: 100%;
+            border-radius: 8px;
+        }
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            color: white;
+        }
+        .close:hover {
+            color: red;
         }
     </style>
 </head>
 <body>
     <div id="movies" class="movie-grid"></div>
+
+    <!-- Movie Details Modal -->
+    <div id="movie-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="modal-title"></h2>
+            <img id="modal-image" src="" alt="Movie Poster">
+            <p id="modal-overview"></p>
+            <p id="modal-runtime"></p>
+            <p id="modal-genres"></p>
+        </div>
+    </div>
+
     <script>
         async function fetchMovies() {
             try {
-                // Replace with your Vercel API URL
                 const response = await fetch('https://found-footage.vercel.app/api/api_service');
                 const movies = await response.json();
                 
@@ -58,13 +103,54 @@
                         <h3>${movie.title}</h3>
                         <img src="https://image.tmdb.org/t/p/w200${movie.poster_path}" alt="${movie.title} poster">
                     `;
+
+                    // Add click event to fetch and show details in modal
+                    movieCard.addEventListener('click', async () => {
+                        await fetchMovieDetails(movie.id);
+                        document.getElementById('movie-modal').style.display = "flex";
+                    });
+
                     moviesDiv.appendChild(movieCard);
                 });
+
             } catch (error) {
                 console.error('Error:', error);
             }
         }
 
+        // Fetch additional movie details using your custom endpoint
+        async function fetchMovieDetails(movieId) {
+            try {
+                // Use your movie details API endpoint and pass movie_id as a query parameter
+                const response = await fetch(`https://found-footage.vercel.app/api/movie_details?movie_id=${movieId}`);
+                const movie = await response.json();
+        
+                // Populate the modal with the fetched data
+                document.getElementById('modal-title').textContent = movie.title;
+                document.getElementById('modal-image').src = `https://image.tmdb.org/t/p/w300${movie.poster_path}`;
+                document.getElementById('modal-image').alt = `${movie.title} poster`;
+                document.getElementById('modal-overview').textContent = movie.overview;
+                document.getElementById('modal-runtime').textContent = `Runtime: ${movie.runtime} min`;
+                document.getElementById('modal-genres').textContent = `Genres: ${movie.genres.join(', ')}`;
+        
+            } catch (error) {
+                console.error("Error fetching movie details:", error);
+            }
+        }
+        
+        // Close modal functionality
+        document.querySelector('.close').addEventListener('click', () => {
+            document.getElementById('movie-modal').style.display = "none";
+        });
+
+        // Close modal when clicking outside the content
+        window.addEventListener('click', (event) => {
+            if (event.target === document.getElementById('movie-modal')) {
+                document.getElementById('movie-modal').style.display = "none";
+            }
+        });
+
+        // Fetch and display movies on page load
         fetchMovies();
     </script>
 </body>
