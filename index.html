@@ -79,7 +79,12 @@
             background-color: rgba(255, 255, 255, 0.1);
             text-align: center;
         }
-
+        .movie-card:hover {
+            transform: scale(1.05); /* Slightly enlarges the card */
+            transition: transform 0.2s ease-in-out;
+            background-color: rgba(255, 255, 255, 0.2); /* Lighten the background */
+            cursor: pointer;
+        }
         .movie-card h3 {
             margin-top: 0;
         }
