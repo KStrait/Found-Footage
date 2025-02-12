@@ -44,14 +44,13 @@
             max-height: 80vh; /* Limit modal height to 80% of viewport */
             overflow-y: auto;  /* Scroll inside modal if content overflows */
         }
-
-        /* Modal image should not overflow */
+        /* Modal image should be centered and maintain aspect ratio */
         .modal-content img {
-            width: 100%;
-            border-radius: 8px;
-            max-height: 300px;  /* Limit image size */
+            max-height: 80vh; /* Limit height to 80% of the viewport height */
+            object-fit: contain; /* Ensure the image maintains its aspect ratio */
+            margin: 0 auto;   /* Center the image horizontally */
+            display: block;   /* Block-level element to center it */
         }
-
         /* Close button */
         .close {
             position: absolute;
