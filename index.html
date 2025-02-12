@@ -199,7 +199,6 @@
                 document.getElementById('modal-image').alt = `${movie.title} poster`;
                 document.getElementById('modal-overview').textContent = movie.overview;
                 document.getElementById('modal-runtime').textContent = `Runtime: ${movie.runtime} min`;
-                document.getElementById('modal-genres').textContent = `Genres: ${movie.genres.join(', ')}`;
 
                 document.getElementById('movie-modal').style.display = 'flex';
                 document.body.classList.add('modal-open');
