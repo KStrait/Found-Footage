@@ -5,35 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Movie List</title>
     <style>
-        body {
-            background-color: black;
-            margin: 0;
-            padding: 0;
-            color: white;
-            font-family: Arial, sans-serif;
-        }
-        .movie-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 20px;
-            padding: 20px;
-        }
-        .movie-card {
-            border: 2px solid white;
-            padding: 15px;
-            border-radius: 12px;
-            background-color: rgba(255, 255, 255, 0.1);
-            color: white;
-            text-align: center;
-            cursor: pointer;
-            transition: transform 0.2s ease-in-out;
-        }
-        .movie-card:hover {
-            transform: scale(1.05);
-        }
-        .movie-card img {
-            max-width: 100%;
-            border-radius: 8px;
+        /* Prevent page scroll when modal is open */
+        body.modal-open {
+            overflow: hidden;
         }
 
         /* Modal Styles */
@@ -47,7 +21,10 @@
             background: rgba(0, 0, 0, 0.8);
             justify-content: center;
             align-items: center;
+            overflow-y: auto;  /* Allow modal to scroll if content overflows */
         }
+
+        /* Modal content styling */
         .modal-content {
             background: #222;
             padding: 20px;
@@ -56,11 +33,18 @@
             width: 90%;
             max-width: 400px;
             color: white;
+            max-height: 80vh; /* Limit modal height to 80% of viewport */
+            overflow-y: auto;  /* Scroll inside modal if content overflows */
         }
+
+        /* Modal image should not overflow */
         .modal-content img {
             width: 100%;
             border-radius: 8px;
+            max-height: 300px;  /* Limit image size */
         }
+
+        /* Close button */
         .close {
             position: absolute;
             top: 15px;
@@ -69,20 +53,44 @@
             cursor: pointer;
             color: white;
         }
-        .close:hover {
-            color: red;
+
+        /* Movie grid styling */
+        .movie-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .movie-card {
+            border: 2px solid white;
+            padding: 15px;
+            border-radius: 12px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            text-align: center;
+        }
+
+        .movie-card h3 {
+            margin-top: 0;
+            color: white;
+        }
+
+        .movie-card img {
+            max-width: 100%;
+            border-radius: 8px;
         }
     </style>
 </head>
 <body>
     <div id="movies" class="movie-grid"></div>
 
-    <!-- Movie Details Modal -->
+    <!-- Modal Structure -->
     <div id="movie-modal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
             <h2 id="modal-title"></h2>
-            <img id="modal-image" src="" alt="Movie Poster">
+            <img id="modal-image" alt="Movie Poster">
             <p id="modal-overview"></p>
             <p id="modal-runtime"></p>
             <p id="modal-genres"></p>
@@ -90,6 +98,7 @@
     </div>
 
     <script>
+        // Fetch the movie list
         async function fetchMovies() {
             try {
                 const response = await fetch('https://found-footage.vercel.app/api/api_service');
@@ -103,54 +112,56 @@
                         <h3>${movie.title}</h3>
                         <img src="https://image.tmdb.org/t/p/w200${movie.poster_path}" alt="${movie.title} poster">
                     `;
-
-                    // Add click event to fetch and show details in modal
-                    movieCard.addEventListener('click', async () => {
-                        await fetchMovieDetails(movie.id);
-                        document.getElementById('movie-modal').style.display = "flex";
-                    });
-
+                    movieCard.addEventListener('click', () => openModal(movie.id)); // Click to open modal
                     moviesDiv.appendChild(movieCard);
                 });
-
             } catch (error) {
-                console.error('Error:', error);
+                console.error('Error fetching movie list:', error);
             }
         }
 
-        // Fetch additional movie details using your custom endpoint
+        // Fetch additional movie details using movie_id
         async function fetchMovieDetails(movieId) {
             try {
-                // Use your movie details API endpoint and pass movie_id as a query parameter
                 const response = await fetch(`https://found-footage.vercel.app/api/movie_details?movie_id=${movieId}`);
                 const movie = await response.json();
-        
-                // Populate the modal with the fetched data
+
+                // Populate the modal with fetched data
                 document.getElementById('modal-title').textContent = movie.title;
                 document.getElementById('modal-image').src = `https://image.tmdb.org/t/p/w300${movie.poster_path}`;
                 document.getElementById('modal-image').alt = `${movie.title} poster`;
                 document.getElementById('modal-overview').textContent = movie.overview;
                 document.getElementById('modal-runtime').textContent = `Runtime: ${movie.runtime} min`;
                 document.getElementById('modal-genres').textContent = `Genres: ${movie.genres.join(', ')}`;
-        
+
+                // Show the modal
+                document.getElementById('movie-modal').style.display = 'flex';
+                document.body.classList.add('modal-open'); // Prevent background scroll
             } catch (error) {
                 console.error("Error fetching movie details:", error);
             }
         }
-        
+
+        // Open the modal and fetch the movie details
+        function openModal(movieId) {
+            fetchMovieDetails(movieId);
+        }
+
         // Close modal functionality
         document.querySelector('.close').addEventListener('click', () => {
-            document.getElementById('movie-modal').style.display = "none";
+            document.getElementById('movie-modal').style.display = 'none';
+            document.body.classList.remove('modal-open'); // Enable background scroll
         });
 
-        // Close modal when clicking outside the content
+        // Close modal when clicking outside the modal content
         window.addEventListener('click', (event) => {
             if (event.target === document.getElementById('movie-modal')) {
-                document.getElementById('movie-modal').style.display = "none";
+                document.getElementById('movie-modal').style.display = 'none';
+                document.body.classList.remove('modal-open'); // Enable background scroll
             }
         });
 
-        // Fetch and display movies on page load
+        // Initialize the movie list on page load
         fetchMovies();
     </script>
 </body>
